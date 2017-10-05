@@ -1,0 +1,40 @@
+---
+title: "Solution Proposal for BNP Paribas Cardif Claims Management"
+author: "Monisha Gopal"
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem
+
+BNP Paribas Cardif is a global personal insurance provider. They want to automate the process of determining whether a claim can automatically be accepted or needs to be checked further. The problem is then to take the features available to BNP Paribas Cardif and output the probability that a claim can be accepted. 
+
+
+## Data
+
+This problem comes with a training data set and a test data set (https://www.kaggle.com/c/bnp-paribas-cardif-claims-management/data). The training data set contains 133 variables, 21 of which are categorical variables and 112 of which are numerical variables. 2 of the categorical variables include the ID and the target (whether or not the claim is acceptable). 
+
+``` {r train}
+load(file="train.RData")
+str(train, list.len=10)
+```
+
+## Solution Outline
+1. Data preprocessing
+  a. For categorical variables, if there are more than 100 possible values remove it (i.e. v22 has 900+ possible values)
+  b. For each variable, go through and mark each of the outliers (lowest/highest 5%) as NA
+  c. For each variable, find the average value and replace all NA's with that average value
+2. Feature Engineering (possible methods)
+  a. Separate categorical variables into binary variables for each possible value 
+  b. Do univariate regression to see which variables have the highest correlation to acceptable claims
+3. Model
+  a. Linear Regression
+4. Cross-validation to tweak model 
+  a. k-fold cross validation
+
+## Deliverables
+1. Slide deck explaining process
+2. Code
