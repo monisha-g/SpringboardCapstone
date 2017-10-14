@@ -21,23 +21,37 @@ str(train, list.len=10)
 
 ## Solution Outline
 1. Data preprocessing
+    
     a. Go through each feature from v1 to v131,
+    
         i. If more than 25% of the values in the feature are missing, remove the feature
+    
     b. Treat outliers and missing values
+    
         i. Check whether non-missing values are too constant, if so, remove the feature
         ii. For numerical features, replace outliers and missing values with the average of the remaining values
         iii. For categorical features, there are two options,
+        
             A. If between 10-25% of the values are missing, create an entirely new categorical feature called "Missing"
             B. Or replace the missing values with the most frequently occurring features
+    
     c. Check correlation between features
+    
         i. If two features are highly correlated to each other, then remove one of them
+
 2. Feature enrichment (possible methods)
+       
     a. Weight of evidence
     b. Informational value
+
 3. Data split 
+
 4. Model
+    
     a. Logistic Regression
+
 5. Cross-validation
+    
     a. K-fold cross validation
 
 ## Deliverables
