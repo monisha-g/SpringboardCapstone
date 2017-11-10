@@ -4,17 +4,38 @@
 # Purpose:        
 #
 # Data Used:      
-# Packages Used:  dplyr
+# Packages Used:  dplyr, caret, plyr
 
 
 ## Library/Sources
 library(dplyr)
+library(caret)
+library(plyr)
 
 
 
 
 ## Function(s)
-
+remove_blank_spaces <- function(d_frame) {
+  # Removes the blank spaces and replaces them with NA
+  # values to make it easier to process
+  #
+  # Args:
+  #   d_frame - original data
+  #
+  # Returns:
+  #   New data frame with replaced values
+  
+  remove_blanks_by_column <- function(column) {
+    if(is.factor(column)) {
+      levels(column)[levels(column)==""] <- NA
+    }
+    return(column)
+  }
+  
+  new_d_frame <- lapply(d_frame, remove_blanks_by_column)
+  return(tbl_df(new_d_frame))
+}
 
 remove_high_na_cols <- function(d_frame, perc) {
   # Removes the columns in the data frame that have more
@@ -38,9 +59,8 @@ remove_high_na_cols <- function(d_frame, perc) {
 }
 
 
-
 only_categorical_df <- function(d_frame) {
-  # Returns a data frame with only categorical variables
+  # Returns a logical vector with positions of categorical variables
   # (note that here we consider both integer and character columns
   # as discrete)
   #
@@ -48,28 +68,28 @@ only_categorical_df <- function(d_frame) {
   #   d_frame - Original data (data.frame)
   #
   # Returns:
-  #   New data frame with only categorical attributes
+  #   Logical vector with categorical variable positions
   
-  new_d_frame <- d_frame[sapply(d_frame, is.integer) | 
-                         sapply(d_frame, is.character)]
-  return(new_d_frame)
+  loc_vec <- sapply(d_frame, is.integer) | 
+                         sapply(d_frame, is.character)
+  return(loc_vec)
 }
 
 only_continuous_df <- function(d_frame) {
-  # Returns a data frame with only continuous variables
+  # Returns a logical vector with locations of continuous variables
   #
   # Args:
   #   d_frame - Original data (data.frame)
   #
   # Returns:
-  #   New data frame with only continuous attributes
+  #   Logical vector with locations of continuous attributes
   
-  new_d_frame <- d_frame[sapply(d_frame, is.double)]
-  return(new_d_frame)
+  loc_vec <- sapply(d_frame, is.double)
+  return(loc_vec)
 }
  
 
-replace_na_continuous <- function(d_frame) {
+replace_na_continuous <- function(d_frame, loc_vec) {
   # Returns a data frame of continuous variables where
   # all the NA values in a given column is replaced
   # by the non-NA mean
@@ -79,15 +99,17 @@ replace_na_continuous <- function(d_frame) {
   #             variables
   #
   # Returns:
-  #   New data frame with all the NA values filled
+  #   New data frame with all the NA values filled in cont variables
   
   replace_na_mean <- function(column) {
-    mn <- mean(column, na.rm = TRUE)
-    column[is.na(column)] <- mn
+    if(is.double(column) & !is.integer(column)) {
+      mn <- mean(column, na.rm = TRUE)
+      column[is.na(column)] <- mn
+    }
     return(column)
   }
   
-  return(tbl_df(lapply(d_frame, replace_na_mean)))
+  return(tbl_df(lapply(d_frame[loc_vec], replace_na_mean)))
   
 }
 
@@ -104,8 +126,10 @@ replace_na_categorical <- function(d_frame) {
   #   Data frame with replaced NA values
   
   replace_na_mode <- function(column) {
-    md <- names(sort(table(factor(column)), decreasing=TRUE)[1])
-    column[is.na(column)] <- md
+    if(!is.double(column)) {
+      md <- names(sort(table(factor(column)), decreasing=TRUE)[1])
+      column[is.na(column)] <- md
+    }
     return(column)
   }
   
@@ -119,19 +143,54 @@ remove_outlier_values <- function(d_frame, k = 3) {
   # Args:
   #   d_frame - original data (data.frame)
   #   k - factor of range (numeric)
+  #   loc_vec
   #
   # Returns:
   #   The original data frame with outliers removed
   
   remove_outlier_by_column <- function(column) {
-    iqr <- IQR(column, na.rm = TRUE)
-    mn <- mean(column, na.rm = TRUE)
-    column[column >= mn + (k*iqr) | column <= mn - (k*iqr)] = NA
+    if(is.double(column) & !is.integer(column)) {
+      iqr <- IQR(column, na.rm = TRUE)
+      mn <- mean(column, na.rm = TRUE)
+      column[column >= mn + (k*iqr) | column <= mn - (k*iqr)] = NA
+    }
     return(column)
   }
   
   return(tbl_df(lapply(d_frame, remove_outlier_by_column)))
 }
 
+
+remove_near_zero_variability <- function(d_frame) {
+  # Removes columns with near zero variability
+  #
+  # Args:
+  #   d_frame - original data frame
+  #   min_var - minimum allowable variability
+  #
+  # Returns:
+  #   A data frame where columns with near zero
+  #   variability are removed.
+    
+  new_d_frame <- d_frame[-nearZeroVar(d_frame)]
+  return(new_d_frame)
+}
+
+
+remove_lots_categories <- function(d_frame, k) {
+  # Removes categorical variables with more than k number of
+  # categories
+  #
+  # Args:
+  #   d_frame - original data frame
+  #   k - maximum number of allowable categories
+  #
+  # Return:
+  #   A data frame with those categorical variables removed
+  
+  loc <- sapply(d_frame, function(x) length(levels(factor(x))) <= k | 
+                  is.double(x))
+  return(d_frame[loc])
+}
 
 
