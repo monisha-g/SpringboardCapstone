@@ -37,6 +37,7 @@ remove_blank_spaces <- function(d_frame) {
   return(tbl_df(new_d_frame))
 }
 
+
 remove_high_na_cols <- function(d_frame, perc) {
   # Removes the columns in the data frame that have more
   # than a certain percentage of NA values
@@ -58,36 +59,6 @@ remove_high_na_cols <- function(d_frame, perc) {
   return(new_d_frame)
 }
 
-
-only_categorical_df <- function(d_frame) {
-  # Returns a logical vector with positions of categorical variables
-  # (note that here we consider both integer and character columns
-  # as discrete)
-  #
-  # Args:
-  #   d_frame - Original data (data.frame)
-  #
-  # Returns:
-  #   Logical vector with categorical variable positions
-  
-  loc_vec <- sapply(d_frame, is.integer) | 
-                         sapply(d_frame, is.character)
-  return(loc_vec)
-}
-
-only_continuous_df <- function(d_frame) {
-  # Returns a logical vector with locations of continuous variables
-  #
-  # Args:
-  #   d_frame - Original data (data.frame)
-  #
-  # Returns:
-  #   Logical vector with locations of continuous attributes
-  
-  loc_vec <- sapply(d_frame, is.double)
-  return(loc_vec)
-}
- 
 
 replace_na_continuous <- function(d_frame, loc_vec) {
   # Returns a data frame of continuous variables where
@@ -113,6 +84,7 @@ replace_na_continuous <- function(d_frame, loc_vec) {
   
 }
 
+
 replace_na_categorical <- function(d_frame) {
   # Returns a data frame where all the NA values
   # in a missing attribute are replaced with the
@@ -135,6 +107,7 @@ replace_na_categorical <- function(d_frame) {
   
   return(tbl_df(lapply(d_frame, replace_na_mode)))
 }
+
 
 remove_outlier_values <- function(d_frame, k = 3) {
   # Removes the outlier values in each numerical attribute 
