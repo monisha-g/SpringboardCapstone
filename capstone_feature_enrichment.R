@@ -155,6 +155,8 @@ generate_woe_plot_cat <- function(info, title) {
   # Convert the ranges into characters for labelling
   # bar plot
   info$range_labels <- sapply(info$ranges, paste0, collapse=" ")
+  info <- transform(info, range_labels = reorder(range_labels, bins))
+  
   ggplot(info, aes(x = range_labels, y=woe, 
                    fill = perc_obs >= 5, alpha = perc_obs)) +
     geom_bar(stat="identity", position = "identity") + 
@@ -218,7 +220,8 @@ replace_with_woe <- function(var, woe_frame, cont=TRUE) {
       }
     }
   }
-  return(as.numeric(var))
+  var2 <- gsub(",","",var)
+  return(as.numeric(var2))
 }
 
 
