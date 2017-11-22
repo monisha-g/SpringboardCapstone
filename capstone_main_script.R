@@ -26,6 +26,8 @@ train <- tbl_df(train)
 # Remove ID column
 train <- train[-1]
 
+test <- read.csv("/Users/monishagopal/Desktop/insurance/test.csv")
+
 # Look at structure of train data
 str(train)
 summary(train)
@@ -37,16 +39,20 @@ head(train)
 
 # Replace blank spaces with NA values 
 train <- remove_blank_spaces(train)
+test_1 <- remove_blank_spaces(test)
 
 # Remove variables with more than 25% NA values
 train_2 <- remove_high_na_cols(train, 0.25)
 
 # Remove outliers in continuous variables and replace with NA
 train_3 <- remove_outlier_values(train_2)
+test_2 <- remove_outlier_values(test_1)
 
 # Replace NAs with mean in continuous variables/mode in cat
 train_4 <- replace_na_continuous(train_3)
+test_3 <- replace_na_continuous(test_2)
 train_5 <- replace_na_categorical(train_4)
+test_4 <- replace_na_categorical(test_3)
 
 # Remove features with zero or near-zero variance
 train_6 <- remove_near_zero_variability(train_5)
@@ -111,7 +117,7 @@ generate_woe_plot_con(woe10_1, "v10 WOE1 - 20 bins")
 iv10_1 <- sum(woe10_1$iv, na.rm=TRUE)
 iv10_1
 
-# Combine bins 1-2-3, 4-5, 6, 7, 8, 9-10, 11-13-18, 12-15-17-14-19-20-16 
+# Combine bins 1-2-3, 4-5, 6, 7, 8, 9-10, 11-12-13-14, 15-16-17-19-20
 bins10_2 <- list(c(1, 2, 3), c(4, 5), 6, c(7, 8), c(9, 10), c(11, 12, 13, 14),
                  c(15, 16, 17, 19, 20))
 woe10_2 <- combine_bins_con(woe10_1, bins10_2)
@@ -221,6 +227,7 @@ iv21_4 # 0.08159985
 
 
 # v24 - Toss this variable
+summary(trainSplit$v24)
 ggplot(trainSplit, aes(x = v24, fill = factor(target))) + 
   geom_bar(color = "white", 
                  aes(y=..count../sum(..count..))) +
@@ -233,6 +240,7 @@ iv24_1 # 0.01096248
 
 
 # v47 
+summary(trainSplit$v47)
 ggplot(trainSplit, aes(x = v47, fill = factor(target))) + 
   geom_bar(color = "white", 
            aes(y=..count../sum(..count..))) +
@@ -286,7 +294,7 @@ iv52_1 # 0.002302835
 
 
 # v62
-summary(trainSplit$v62)
+summary(factor(trainSplit$v62))
 ggplot(trainSplit, aes(x = v62, fill = factor(target))) + 
   geom_bar(color = "white", 
            aes(y=..count../sum(..count..))) +
@@ -341,7 +349,7 @@ iv71_2 # 0.00593427
 
 
 # 72
-summary(trainSplit$v72)
+summary(factor(trainSplit$v72))
 ggplot(trainSplit, aes(x = v72, fill = factor(target))) + 
   geom_bar(color = "white", 
            aes(y=..count../sum(..count..))) +
@@ -404,7 +412,7 @@ iv114_2 # 0.03501795
 
 
 # v129
-summary(trainSplit$v129)
+summary(factor(trainSplit$v129))
 ggplot(trainSplit, aes(x = v129, fill = factor(target))) + 
   geom_bar(color = "white", 
            aes(y=..count../sum(..count..))) +
@@ -458,20 +466,20 @@ trainSplit$v91 = NULL
 testSplit$v91 = NULL
 
 # Replace rest
-trainSplit$v10 = replace_with_woe(trainSplit$v10, woe10_2, cont=FALSE)
-testSplit$v10 = replace_with_woe(testSplit$v10, woe10_2, cont=FALSE)
+trainSplit$v10 = replace_with_woe(trainSplit$v10, woe10_2, cont=TRUE, orig_woe = woe10_1)
+testSplit$v10 = replace_with_woe(testSplit$v10, woe10_2, cont=TRUE, orig_woe = woe10_1)
 
-trainSplit$v12 = replace_with_woe(trainSplit$v12, woe12_2, cont=FALSE)
-testSplit$v12 = replace_with_woe(testSplit$v12, woe12_2, cont=FALSE)
+trainSplit$v12 = replace_with_woe(trainSplit$v12, woe12_2, cont=TRUE, orig_woe = woe12_1)
+testSplit$v12 = replace_with_woe(testSplit$v12, woe12_2, cont=TRUE, orig_woe = woe12_1)
 
-trainSplit$v21 = replace_with_woe(trainSplit$v21, woe21_2, cont=FALSE)
-testSplit$v21 = replace_with_woe(testSplit$v21, woe21_2, cont=FALSE)
+trainSplit$v21 = replace_with_woe(trainSplit$v21, woe21_2, cont=TRUE, orig_woe = woe21_1)
+testSplit$v21 = replace_with_woe(testSplit$v21, woe21_2, cont=TRUE, orig_woe = woe21_1)
 
 trainSplit$v47 = replace_with_woe(trainSplit$v47, woe47_2, cont=FALSE)
 testSplit$v47 = replace_with_woe(testSplit$v47, woe47_2, cont=FALSE)
 
-trainSplit$v50 = replace_with_woe(trainSplit$v50, woe50_2, cont=FALSE)
-testSplit$v50 = replace_with_woe(testSplit$v50, woe50_2, cont=FALSE)
+trainSplit$v50 = replace_with_woe(trainSplit$v50, woe50_2, cont=TRUE, orig_woe = woe50_1)
+testSplit$v50 = replace_with_woe(testSplit$v50, woe50_2, cont=TRUE, orig_woe = woe50_1)
 
 trainSplit$v62 = replace_with_woe(trainSplit$v62, woe62_2, cont=FALSE)
 testSplit$v62 = replace_with_woe(testSplit$v62, woe62_2, cont=FALSE)
@@ -482,8 +490,8 @@ testSplit$v66 = replace_with_woe(testSplit$v66, woe66_1, cont=FALSE)
 trainSplit$v72 = replace_with_woe(trainSplit$v72, woe72_3, cont=FALSE)
 testSplit$v72 = replace_with_woe(testSplit$v72, woe72_3, cont=FALSE)
 
-trainSplit$v114 = replace_with_woe(trainSplit$v114, woe114_2, cont=FALSE)
-testSplit$v114 = replace_with_woe(testSplit$v114, woe114_2, cont=FALSE)
+trainSplit$v114 = replace_with_woe(trainSplit$v114, woe114_2, cont=TRUE, orig_woe = woe114_1)
+testSplit$v114 = replace_with_woe(testSplit$v114, woe114_2, cont=TRUE, orig_woe = woe114_1)
 
 trainSplit$v129 = replace_with_woe(trainSplit$v129, woe129_2, cont=FALSE)
 testSplit$v129 = replace_with_woe(testSplit$v129, woe129_2, cont=FALSE)
@@ -492,8 +500,16 @@ testSplit$v129 = replace_with_woe(testSplit$v129, woe129_2, cont=FALSE)
 trainSplit$target = factor(trainSplit$target)
 testSplit$target = factor(testSplit$target)
 
-model1 <- glm(target ~ v50 + v47 + v10 + v62 + v66,
+model1 <- glm(target ~ v50 + v129 + v47 + v10 + v62,
                data=trainSplit, family="binomial")
+
+model2 <- glm(target ~ v50 + v129 + v47 + v10 + v62 + 
+                v66 + v21 + v12, data=trainSplit, family="binomial" )
+
+model3 <- glm(target ~ v50 + v129 + v47 + v10 + v62 + 
+                v66 + v21 + v12 + v72 + v114, data=trainSplit, family="binomial" )
+
+
 summary(model1)
 pred1 <- predict(model1, newdata = testSplit, type = "response")
 table(testSplit$target, pred1 > 0.5)
@@ -502,3 +518,42 @@ confusionMatrix(factor(as.numeric(pred1 > 0.5)), testSplit$target)
 table(testSplit$target, pred1 > 0.8)  
 confusionMatrix(factor(as.numeric(pred1 > 0.8)), testSplit$target)
 
+
+# Apply WOE to test set 
+test_4$v10 = replace_with_woe(test_4$v10, woe10_2, cont=TRUE, orig_woe = woe10_1)
+
+test_4$v12 = replace_with_woe(test_4$v12, woe12_2, cont=TRUE, orig_woe = woe12_1)
+
+test_4$v21 = replace_with_woe(test_4$v21, woe21_2, cont=TRUE, orig_woe = woe21_1)
+
+test_4$v47 = replace_with_woe(test_4$v47, woe47_2, cont=FALSE)
+
+test_4$v50 = replace_with_woe(test_4$v50, woe50_2, cont=TRUE, orig_woe = woe50_1)
+
+test_4$v62 = replace_with_woe(test_4$v62, woe62_2, cont=FALSE)
+
+test_4$v66 = replace_with_woe(test_4$v66, woe66_1, cont=FALSE)
+
+test_4$v72 = replace_with_woe(test_4$v72, woe72_3, cont=FALSE)
+
+test_4$v114 = replace_with_woe(test_4$v114, woe114_2, cont=TRUE, orig_woe = woe114_1)
+
+test_4$v129 = replace_with_woe(test_4$v129, woe129_2, cont=FALSE)
+
+
+predTest1 <- predict(model1, newdata = test_4, type = "response")
+predTest2 <- predict(model2, newdata = test_4, type = "response")
+predTest3 <- predict(model3, newdata = test_4, type = "response")
+
+output1 <- data.frame(ID = test$ID)
+output1$PredictedProb <- predTest1
+
+output2 <- data.frame(ID = test$ID)
+output2$PredictedProb <- predTest2
+
+output3 <- data.frame(ID = test$ID)
+output3$PredictedProb <- predTest3
+
+write.csv(output1, file.path('model1.csv'), row.names = FALSE)
+write.csv(output2, file.path('model2.csv'), row.names = FALSE)
+write.csv(output3, file.path('model3.csv'), row.names = FALSE)

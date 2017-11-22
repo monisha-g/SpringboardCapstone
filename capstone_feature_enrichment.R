@@ -108,15 +108,9 @@ combine_bins_con <- function(orig_woe, new_bins_list) {
   n_dframe$num_events <- 0
   n_dframe$num_non_events <- 0
   
-  print(new_bins_list)
-  print(n_dframe$bins)
   for(bin in n_dframe$bins) {
-    print("bin")
-    print(bin)
     for(cat in n_dframe$ranges[bin]) {
-      print(cat)
       if(length(cat) > 1) {
-        print(cat)
         filt_woe <- filter(orig_woe, bins %in% cat)
         n_dframe$num_events[bin] = sum(filt_woe$num_events)
         n_dframe$num_non_events[bin] = sum(filt_woe$num_non_events)
@@ -182,25 +176,28 @@ generate_woe_plot_con <- function(info, title) {
 }
 
 
-replace_with_woe <- function(var, woe_frame, cont=TRUE) {
+replace_with_woe <- function(var, woe_frame, cont=TRUE, orig_woe=NULL) {
   # Returns the feature replaced with
   # it's woe values
   #
   # Args:
   #   var - variable vector to be replaced
   #   woe_frame - data frame with woe information
+  #   cont - whether variable is continuous or not
+  #   orig_woe - if var is cont, then give original woe table
   #
   # Returns:
   #   Vector where the values of a feature are replaced with
   #   respective WOE values given by the table
-  
   if(cont == TRUE) {
-    # Continuous
+    # Continuous (need original woe)
     for(i in woe_frame$bins) {
-      if(i != length(woe_frame$bins)) {
-        lower <- woe_frame$ranges[i]
-        upper <- woe_frame$ranges[i+1]
-        var <- replace(var, var >= lower & var < upper, woe_frame$woe[i])
+      for(cat in woe_frame$ranges[i]) {
+        for(item in cat) {
+          lower <- orig_woe$ranges[item]
+          upper <- orig_woe$ranges[item+1]
+          var <- replace(var, var >= lower & var < upper, woe_frame$woe[i])
+        }
       }
     }
   } else {
