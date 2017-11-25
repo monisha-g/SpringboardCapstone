@@ -1,9 +1,9 @@
-# File-Name:      
-# Date:           
+# File-Name:      capstone_data_wrangling.R
+# Date:           2017-11-25
 # Author:         Monisha Gopalakrishnan
-# Purpose:        
+# Purpose:        Contains functions to aid in data wrangling 
+#                 (i.e. removing NA values)
 #
-# Data Used:      
 # Packages Used:  dplyr, caret, plyr
 
 

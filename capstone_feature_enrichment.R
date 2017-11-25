@@ -1,9 +1,8 @@
 # File-Name:      capstone_feature_enrichment.R
-# Date:           
-# Author:         Monisha Gopalakrishnan
-# Purpose:        
+# Date:           2017-11-25
+# Author:         Monisha Gopalakrishnan 
+# Purpose:        Contains functions to calculate and plot WOE
 #
-# Data Used:      
 # Packages Used:  dplyr, ggplot2
 
 

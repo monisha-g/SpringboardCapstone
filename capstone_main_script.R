@@ -1,11 +1,11 @@
 # File-Name:      capstone_main_script.R
-# Date:           2017-11-8
+# Date:           2017-11-25
 # Author:         Monisha Gopalakrishnan
-# Purpose:        Contains script to clean data and then use machine learning models
-#                 on it
+# Purpose:        Contains script to process claims data and run it through 
+#                 machine learning models 
 #
 # Data Used:      train
-# Packages Used:  dplyr, ggplot2, car, plyr
+# Packages Used:  dplyr, ggplot2, car, plyr, pROC
 
 
 ## Library/Source -------------------------------
@@ -13,6 +13,7 @@ library(dplyr)
 library(ggplot2)
 library(car)
 library(plyr)
+library(pROC)
 
 source("/Users/monishagopal/Desktop/SpringboardCapstone/capstone_data_wrangling.R")
 source("/Users/monishagopal/Desktop/SpringboardCapstone/capstone_feature_enrichment.R")
@@ -477,6 +478,7 @@ testSplit$v21 = replace_with_woe(testSplit$v21, woe21_2, cont=TRUE, orig_woe = w
 
 trainSplit$v47 = replace_with_woe(trainSplit$v47, woe47_2, cont=FALSE)
 testSplit$v47 = replace_with_woe(testSplit$v47, woe47_2, cont=FALSE)
+testSplit$v47[is.na(testSplit$v47)] <- -0.432334981162707 # Replace single NA with mode WOE
 
 trainSplit$v50 = replace_with_woe(trainSplit$v50, woe50_2, cont=TRUE, orig_woe = woe50_1)
 testSplit$v50 = replace_with_woe(testSplit$v50, woe50_2, cont=TRUE, orig_woe = woe50_1)
@@ -496,30 +498,65 @@ testSplit$v114 = replace_with_woe(testSplit$v114, woe114_2, cont=TRUE, orig_woe 
 trainSplit$v129 = replace_with_woe(trainSplit$v129, woe129_2, cont=FALSE)
 testSplit$v129 = replace_with_woe(testSplit$v129, woe129_2, cont=FALSE)
 
-# Apply logistic regression
+# Machine Learning: Logistic Regression  --------
 trainSplit$target = factor(trainSplit$target)
 testSplit$target = factor(testSplit$target)
 
+# Top 5 variables
 model1 <- glm(target ~ v50 + v129 + v47 + v10 + v62,
                data=trainSplit, family="binomial")
 
+# Top 8 variables
 model2 <- glm(target ~ v50 + v129 + v47 + v10 + v62 + 
                 v66 + v21 + v12, data=trainSplit, family="binomial" )
 
+# Top 10 variables
 model3 <- glm(target ~ v50 + v129 + v47 + v10 + v62 + 
                 v66 + v21 + v12 + v72 + v114, data=trainSplit, family="binomial" )
 
-
+# Model 1 validation
 summary(model1)
 pred1 <- predict(model1, newdata = testSplit, type = "response")
-table(testSplit$target, pred1 > 0.5)
-confusionMatrix(factor(as.numeric(pred1 > 0.5)), testSplit$target)
+roc1 <- roc(response=testSplit$target, predictor=pred1, plot=TRUE)
+roc1$auc
+o1 <- data.frame(specificity = roc1$specificities, sensitivity = roc1$sensitivities,
+                 threshold = roc1$thresholds)
+o1
+ggplot(o1, aes(x=threshold))+geom_line(aes(y=sensitivity, colour="sensitivity")) + 
+  geom_line(aes(y=specificity, colour="specificity")) +
+  ggtitle("Model 1 Sensitivity, Specificity v. Threshold Plot")
+confusionMatrix(factor(as.numeric(pred1 > 0.7444081)), testSplit$target)
 
-table(testSplit$target, pred1 > 0.8)  
-confusionMatrix(factor(as.numeric(pred1 > 0.8)), testSplit$target)
+# Model 2 validation
+summary(model2)
+pred2 <- predict(model2, newdata = testSplit, type = "response")
+roc2 <- roc(response=testSplit$target, predictor=pred2, plot=TRUE)
+roc2$auc
+o2 <- data.frame(specificity = roc2$specificities, sensitivity = roc2$sensitivities,
+                 threshold = roc2$thresholds)
+o2
+ggplot(o2, aes(x=threshold))+geom_line(aes(y=sensitivity, colour="sensitivity")) + 
+  geom_line(aes(y=specificity, colour="specificity")) +
+  ggtitle("Model 2 Sensitivity, Specificity v. Threshold Plot")
+confusionMatrix(factor(as.numeric(pred2 > 0.7451645)), testSplit$target)
 
 
-# Apply WOE to test set 
+# Model 3 validation
+summary(model3)
+pred3 <- predict(model3, newdata = testSplit, type = "response")
+roc3 <- roc(response=testSplit$target, predictor=pred3, plot=TRUE)
+roc3$auc
+o3 <- data.frame(specificity = roc3$specificities, sensitivity = roc3$sensitivities,
+                 threshold = roc3$thresholds)
+o3
+ggplot(o3, aes(x=threshold))+geom_line(aes(y=sensitivity, colour="sensitivity")) + 
+  geom_line(aes(y=specificity, colour="specificity")) +
+  ggtitle("Model 3 Sensitivity, Specificity v. Threshold Plot")
+confusionMatrix(factor(as.numeric(pred3 > 0.7450126)), testSplit$target)
+
+
+
+# Apply WOE to test set for submission to kaggle
 test_4$v10 = replace_with_woe(test_4$v10, woe10_2, cont=TRUE, orig_woe = woe10_1)
 
 test_4$v12 = replace_with_woe(test_4$v12, woe12_2, cont=TRUE, orig_woe = woe12_1)
