@@ -52,7 +52,7 @@ str(train, list.len=10)
 
 5. Cross-validation
     
-    a. K-fold cross validation
+    a. 50/50 training data split
 
 ## Deliverables
 1. Slide deck explaining process
